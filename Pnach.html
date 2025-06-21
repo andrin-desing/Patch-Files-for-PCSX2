@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver Guide zur PNACH-Patch-Erstellung</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Calm & Neutral Tones -->
+    <!-- Application Structure Plan: The application is designed as a single-page, guided learning journey. A sticky navigation bar allows users to jump between logical sections: Basics, Tools, The Process, Formatting, Troubleshooting, and a specific Example (SSX 3). This structure transforms dense text into a progressive, digestible format. Key interactions include an interactive process diagram, tabbed content for core concepts, an accordion FAQ for troubleshooting, and a live hex converter, making the learning process engaging and practical. The SSX 3 content is woven in as a running example to ground the abstract concepts. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Core concepts (PNACH, CRC, Memory). Goal: Inform. Method: Interactive cards & tabbed content (HTML/JS) for clarity.
+        - Report Info: Step-by-step process of finding addresses. Goal: Organize/Engage. Method: A visual, multi-step flowchart layout (HTML/Tailwind) with clickable details.
+        - Report Info: PNACH syntax. Goal: Inform/Engage. Method: An "Interactive PNACH Builder" with hover tooltips (HTML/CSS/JS).
+        - Report Info: Decimal/Float to Hex conversion. Goal: Utility. Method: A live Hex converter (JS) and a static HTML table.
+        - Report Info: Troubleshooting steps. Goal: Organize. Method: An accordion-style FAQ (HTML/JS) for a clean UI.
+        - Report Info: SSX 3 Passwords. Goal: Organize. Method: A searchable HTML table with category filtering.
+        - Justification: Standard charts (bar, line) are unsuitable as the source data is procedural and informational, not quantitative. The chosen interactive diagrams and components are optimal for guiding a user through a technical process.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .font-mono {
+            font-family: 'Roboto Mono', monospace;
+        }
+        /* For smooth scrolling with offset for the sticky header */
+        :target::before {
+            content: "";
+            display: block;
+            height: 80px; /* Adjust to match header height */
+            margin: -80px 0 0;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 2px dotted #0ea5e9; /* sky-500 */
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #1e293b; /* slate-800 */
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .nav-active {
+            color: #0ea5e9; /* sky-500 */
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header id="main-header" class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="#" class="text-xl font-bold text-slate-900">PNACH Creator Guide</a>
+            <div class="hidden md:flex space-x-6 text-slate-600 font-semibold">
+                <a href="#grundlagen" class="hover:text-sky-500 transition-colors">Grundlagen</a>
+                <a href="#werkzeuge" class="hover:text-sky-500 transition-colors">Werkzeuge</a>
+                <a href="#prozess" class="hover:text-sky-500 transition-colors">Der Prozess</a>
+                <a href="#formatierung" class="hover:text-sky-500 transition-colors">Formatierung</a>
+                <a href="#fehlersuche" class="hover:text-sky-500 transition-colors">Fehlerbehebung</a>
+                <a href="#beispiel" class="hover:text-sky-500 transition-colors">Beispiel: SSX 3</a>
+                <a href="#pnach-codes" class="hover:text-sky-500 transition-colors">Alle PNACH-Codes</a>
+            </div>
+             <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-slate-600 hover:bg-slate-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white">
+            <a href="#grundlagen" class="block py-2 px-4 text-sm hover:bg-slate-100">Grundlagen</a>
+            <a href="#werkzeuge" class="block py-2 px-4 text-sm hover:bg-slate-100">Werkzeuge</a>
+            <a href="#prozess" class="block py-2 px-4 text-sm hover:bg-slate-100">Der Prozess</a>
+            <a href="#formatierung" class="block py-2 px-4 text-sm hover:bg-slate-100">Formatierung</a>
+            <a href="#fehlersuche" class="block py-2 px-4 text-sm hover:bg-slate-100">Fehlerbehebung</a>
+            <a href="#beispiel" class="block py-2 px-4 text-sm hover:bg-slate-100">Beispiel: SSX 3</a>
+            <a href="#pnach-codes" class="block py-2 px-4 text-sm hover:bg-slate-100">Alle PNACH-Codes</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <section id="hero" class="text-center py-16 md:py-24">
+            <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-slate-900">Meistere PCSX2-Patches</h1>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">Ein interaktiver Guide, um deine eigenen PNACH-Cheats von Grund auf zu erstellen, zu verstehen und anzuwenden.</p>
+        </section>
+
+        <div class="space-y-24">
+
+            <section id="grundlagen">
+                <h2 class="text-3xl font-bold text-center mb-12 text-slate-900">Die Grundlagen verstehen</h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                        <h3 class="text-xl font-bold mb-3 text-sky-600">Was ist eine PNACH-Datei?</h3>
+                        <p class="text-slate-600">Eine PNACH-Datei ist eine einfache Textdatei, die dem PCSX2-Emulator Anweisungen gibt. Sie teilt ihm mit, welche Stellen im Speicher des Spiels (genannt "Speicheradressen") er zur Laufzeit mit neuen Werten überschreiben soll. Dadurch können Spielmechaniken wie Gesundheit, Zeit oder Punkte direkt manipuliert werden.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                        <h3 class="text-xl font-bold mb-3 text-sky-600">Warum eigene Patches erstellen?</h3>
+                        <p class="text-slate-600">Während viele Cheats online verfügbar sind, gibt es oft keine für Nischen-Spiele oder spezifische Versionen. Das Erstellen eigener Patches gibt dir die volle Kontrolle, ermöglicht einzigartige Modifikationen und ist eine fantastische Möglichkeit, die Grundlagen der Speicherverwaltung und des Reverse Engineering zu erlernen.</p>
+                    </div>
+                </div>
+
+                <div class="mt-12 bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                     <h3 class="text-2xl font-bold mb-6 text-center text-slate-800">Schlüsselkonzepte</h3>
+                     <div class="tabs">
+                        <div class="border-b border-slate-200">
+                            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-sky-600 border-sky-500" data-target="tab-crc">Spiel-CRC</button>
+                                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-slate-500 hover:text-slate-700 hover:border-slate-300" data-target="tab-adresse">Speicheradresse</button>
+                                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-slate-500 hover:text-slate-700 hover:border-slate-300" data-target="tab-datentyp">Datentypen</button>
+                                <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-slate-500 hover:text-slate-700 hover:border-slate-300" data-target="tab-hex">Hexadezimal</button>
+                            </nav>
+                        </div>
+                        <div class="mt-6">
+                            <div class="tab-content" id="tab-crc">
+                                <h4 class="font-bold text-lg mb-2">Die eindeutige ID deines Spiels</h4>
+                                <p class="text-slate-600">Jede Spielversion hat eine einzigartige 8-stellige ID, den CRC. PCSX2 nutzt diesen Code, um die richtige PNACH-Datei zu laden. Der Dateiname deiner PNACH muss exakt mit diesem CRC übereinstimmen. Für unser Beispiel, SSX 3 (NTSC-U), lautet der CRC <code class="font-mono bg-slate-200 text-slate-800 px-2 py-1 rounded-md">08FFF00D</code>. Die Datei muss also <code class="font-mono bg-slate-200 text-slate-800 px-2 py-1 rounded-md">08FFF00D.pnach</code> heißen.</p>
+                            </div>
+                            <div class="tab-content hidden" id="tab-adresse">
+                                <h4 class="font-bold text-lg mb-2">Die "Postleitzahl" für Daten</h4>
+                                <p class="text-slate-600">Stell dir den Spielspeicher wie eine riesige Stadt voller Häuser vor. Jedes Haus hat eine einzigartige Adresse. In diesen Häusern werden Werte wie deine Gesundheit oder Munition gespeichert. Unsere Aufgabe ist es, die genaue Adresse des Wertes zu finden, den wir ändern wollen. Manchmal sind diese Adressen statisch, oft aber auch dynamisch, was die Suche nach "Pointern" (Wegweisern) erfordert.</p>
+                            </div>
+                             <div class="tab-content hidden" id="tab-datentyp">
+                                <h4 class="font-bold text-lg mb-2">Die Sprache der Daten</h4>
+                                <p class="text-slate-600">Ein Wert wird nicht nur als Zahl, sondern in einem bestimmten Format gespeichert. Die Wichtigsten sind:</p>
+                                <ul class="list-disc list-inside mt-2 space-y-1 text-slate-600">
+                                    <li><b>Integer (Ganzzahl):</b> Für Werte wie Munition (z.B. 30) oder Leben (z.B. 3). Meist 4 Bytes (32-bit).</li>
+                                    <li><b>Float (Gleitkommazahl):</b> Für Werte mit Dezimalstellen, z.B. Geschwindigkeit (120.5 km/h) oder eine Gesundheitsanzeige, die als 100% (intern 1.0) dargestellt wird. Ebenfalls meist 4 Bytes.</li>
+                                </ul>
+                                <p class="mt-2 text-sm bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 rounded-md"><b>Pro-Tipp:</b> Viele Spiele speichern Werte, die wie Ganzzahlen aussehen (z.B. 100 HP), intern als Float (100.0). Wenn deine Suche nach einer Ganzzahl scheitert, versuche es immer mit Float!</p>
+                            </div>
+                            <div class="tab-content hidden" id="tab-hex">
+                                 <h4 class="font-bold text-lg mb-2">Das Zahlensystem der Computer</h4>
+                                 <p class="text-slate-600">Speicheradressen und die Werte in PNACH-Dateien werden in Hexadezimal (Basis 16) angegeben. Es verwendet die Ziffern 0-9 und die Buchstaben A-F. Zum Beispiel ist der Dezimalwert 255 in Hex `FF` und 9999 ist `270F`. Du musst Werte, die du patchen willst, immer erst in Hex umwandeln.</p>
+                                 <div class="mt-4 p-4 bg-slate-100 rounded-lg">
+                                    <label for="dec-input" class="block text-sm font-medium text-slate-700">Dezimal-zu-Hex-Konverter (32-bit Integer):</label>
+                                    <input type="number" id="dec-input" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Gib eine Dezimalzahl ein...">
+                                    <p class="mt-2 text-lg">Hexadezimal: <code id="hex-output" class="font-mono font-bold text-sky-600 bg-sky-100 px-2 py-1 rounded-md">00000000</code></p>
+                                    <p class="text-xs text-slate-500 mt-1">Hinweis: Für Floats wird ein externer IEEE 754 Konverter benötigt.</p>
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <section id="werkzeuge">
+                <h2 class="text-3xl font-bold text-center mb-12 text-slate-900">Deine Werkzeuge</h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                        <h3 class="text-xl font-bold mb-3 text-sky-600">Cheat Engine</h3>
+                        <p class="text-slate-600 mb-4">Dein primäres Werkzeug. Es ist ein externes Programm, das den Speicher von laufenden Prozessen (wie PCSX2) scannen und modifizieren kann. Es ist extrem benutzerfreundlich für die iterative Suche nach Werten.</p>
+                        <h4 class="font-semibold mb-2">Wichtige Scan-Typen:</h4>
+                        <ul class="list-disc list-inside space-y-1 text-slate-600 text-sm">
+                            <li><b>Exact Value:</b> Wenn du den genauen Wert kennst (z.B. 100 HP).</li>
+                            <li><b>Unknown Initial Value:</b> Für Gesundheitsbalken ohne Zahlen.</li>
+                            <li><b>Increased/Decreased Value:</b> Wenn du weißt, dass der Wert gestiegen oder gefallen ist.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                        <h3 class="text-xl font-bold mb-3 text-sky-600">PCSX2 Debugger</h3>
+                        <p class="text-slate-600 mb-4">Ein mächtiges, in PCSX2 integriertes Werkzeug. Es ist weniger intuitiv für die Erstsuche, aber unschlagbar, um gefundene Adressen zu verifizieren und zu analysieren, welcher Code auf eine Adresse zugreift (Disassembly).</p>
+                        <h4 class="font-semibold mb-2">Strategie:</h4>
+                        <p class="text-slate-600 text-sm">Nutze <strong>Cheat Engine</strong>, um die Adresse zu finden. Nutze den <strong>PCSX2 Debugger</strong>, um zu verstehen, *warum* diese Adresse funktioniert und um komplexe Pointer zu finden.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="prozess">
+                <h2 class="text-3xl font-bold text-center mb-12 text-slate-900">Der Prozess: Von der Idee zum Patch</h2>
+                <div class="space-y-8">
+                    <!-- Step 1 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-500 text-white flex items-center justify-center rounded-full font-bold text-xl shadow-md">1</div>
+                        <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200 flex-grow">
+                            <h3 class="text-xl font-bold mb-2">Vorbereitung & Savestate</h3>
+                            <p class="text-slate-600">Bringe das Spiel in einen Zustand, in dem der gewünschte Wert klar und stabil ist. Erstelle sofort einen Savestate (Standard: F1)! Dies ist dein wichtigster Schritt, um schnell zu testen und zu laden (F3), ohne das Spiel neustarten zu müssen.</p>
+                        </div>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-500 text-white flex items-center justify-center rounded-full font-bold text-xl shadow-md">2</div>
+                        <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200 flex-grow">
+                            <h3 class="text-xl font-bold mb-2">Der erste Scan</h3>
+                            <p class="text-slate-600">Öffne Cheat Engine und wähle den PCSX2-Prozess. Gib den bekannten Wert ein (z.B. 100) und starte den "First Scan". Wähle den Datentyp (beginne mit 4 Bytes, probiere dann Float). Du wirst tausende Ergebnisse erhalten – das ist normal.</p>
+                        </div>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-500 text-white flex items-center justify-center rounded-full font-bold text-xl shadow-md">3</div>
+                        <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200 flex-grow">
+                            <h3 class="text-xl font-bold mb-2">Filtern mit "Next Scan"</h3>
+                            <p class="text-slate-600">Gehe zurück ins Spiel und verändere den Wert (z.B. nimm Schaden, Gesundheit sinkt auf 90). Gib den neuen Wert (90) in Cheat Engine ein und klicke "Next Scan". Die Ergebnisliste wird drastisch kürzer. Wiederhole diesen Schritt, bis nur noch eine Handvoll Adressen übrig ist.</p>
+                        </div>
+                    </div>
+                    <!-- Step 4 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-500 text-white flex items-center justify-center rounded-full font-bold text-xl shadow-md">4</div>
+                        <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200 flex-grow">
+                            <h3 class="text-xl font-bold mb-2">Identifizieren & Testen</h3>
+                            <p class="text-slate-600">Füge die verbliebenen Adressen zur Adressliste hinzu. Ändere den Wert bei jeder Adresse manuell in Cheat Engine und beobachte, welche Änderung den gewünschten Effekt im Spiel hat. Sobald du die richtige Adresse gefunden hast: Bingo!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="formatierung">
+                <h2 class="text-3xl font-bold text-center mb-12 text-slate-900">Die PNACH-Datei formatieren</h2>
+                <div class="bg-white p-6 rounded-lg shadow-xl border border-slate-200">
+                    <h3 class="text-xl font-bold mb-4">Die Anatomie einer Patch-Zeile</h3>
+                    <div class="bg-slate-800 text-white font-mono p-4 rounded-lg text-sm md:text-base overflow-x-auto">
+                        <span class="text-slate-400">// Ein Kommentar, der den Patch beschreibt</span><br>
+                        <span class="tooltip"><span class="text-purple-400">patch=1</span><span class="tooltiptext">Mode 1: "Freeze". Der Wert wird ständig überschrieben. Mode 0 schreibt nur einmal.</span></span>,
+                        <span class="tooltip"><span class="text-green-400">EE</span><span class="tooltiptext">Ziel: Die "Emotion Engine" der PS2, der Hauptprozessor.</span></span>,
+                        <span class="tooltip"><span class="text-red-400">2031B8D0</span><span class="tooltiptext">Die 8-stellige Hex-Adresse, die du gefunden hast.</span></span>,
+                        <span class="tooltip"><span class="text-yellow-400">extended</span><span class="tooltiptext">Das moderne, flexible Format für den Datentyp.</span></span>,
+                        <span class="tooltip"><span class="text-cyan-400">0000270F</span><span class="tooltiptext">Der 8-stellige Hex-Wert, der geschrieben werden soll (hier: 9999).</span></span>
+                    </div>
+                    <div class="mt-6">
+                        <h4 class="font-bold mb-2">Wichtige Schritte:</h4>
+                        <ol class="list-decimal list-inside space-y-2 text-slate-600">
+                           <li>Finde den <b>Game-CRC</b> (z.B. im PCSX2-Fenstertitel). Für SSX 3 ist es <code class="font-mono bg-slate-200 text-slate-800 px-1 rounded-md">08FFF00D</code>.</li>
+                           <li>Erstelle eine Textdatei im `cheats`-Ordner von PCSX2. Finde den Ordner über `Extras > Datenverzeichnis öffnen`.</li>
+                           <li>Benenne die Datei exakt nach dem CRC mit der Endung `.pnach`, z.B. <code class="font-mono bg-slate-200 text-slate-800 px-1 rounded-md">08FFF00D.pnach</code>.</li>
+                           <li>Öffne die Datei und füge deine Patch-Zeilen mit der oben gezeigten Syntax ein.</li>
+                           <li>Füge Kommentare mit `//` hinzu, um deine Cheats zu organisieren!</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="fehlersuche">
+                 <h2 class="text-3xl font-bold text-center mb-12 text-slate-900">Häufige Probleme & Lösungen</h2>
+                 <div class="space-y-4">
+                     <div class="accordion-item bg-white border border-slate-200 rounded-lg shadow-sm">
+                         <button class="accordion-header w-full text-left p-4 font-semibold text-slate-800 flex justify-between items-center hover:bg-slate-50">
+                             Meine PNACH-Datei wird nicht geladen!
+                             <span class="accordion-icon transform transition-transform">+</span>
+                         </button>
+                         <div class="accordion-content max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                             <div class="p-4 border-t border-slate-200 text-slate-600">
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><b>Falscher CRC/Dateiname:</b> Überprüfe den CRC deines Spiels doppelt. Der Dateiname muss exakt übereinstimmen.</li>
+                                    <li><b>Falsche Dateiendung:</b> Stelle sicher, dass die Datei nicht `xyz.pnach.txt` heißt. Aktiviere sichtbare Dateiendungen in deinem Betriebssystem.</li>
+                                    <li><b>Falscher Ordner:</b> Nutze `Extras > Datenverzeichnis öffnen` in PCSX2, um sicherzustellen, dass die Datei im richtigen `cheats`-Ordner liegt.</li>
+                                    <li><b>Cheats nicht aktiviert:</b> Ist `System > Cheats aktivieren` in PCSX2 angehakt?</li>
+                                </ul>
+                             </div>
+                         </div>
+                     </div>
+                      <div class="accordion-item bg-white border border-slate-200 rounded-lg shadow-sm">
+                         <button class="accordion-header w-full text-left p-4 font-semibold text-slate-800 flex justify-between items-center hover:bg-slate-50">
+                             Der Patch funktioniert nicht oder stürzt das Spiel ab.
+                             <span class="accordion-icon transform transition-transform">+</span>
+                         </button>
+                         <div class="accordion-content max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                             <div class="p-4 border-t border-slate-200 text-slate-600">
+                                 <ul class="list-disc list-inside space-y-2">
+                                    <li><b>Falscher Datentyp:</b> Du versuchst, einen Integer-Wert auf eine Float-Adresse zu schreiben (oder umgekehrt). Teste beide Typen!</li>
+                                    <li><b>Falscher Wert:</b> Hast du den Dezimalwert korrekt in Hexadezimal umgewandelt?</li>
+                                    <li><b>Dynamische Adresse:</b> Die Adresse hat sich geändert. Du musst einen stabilen Pointer finden. Dies ist eine fortgeschrittene Technik, die mehr Recherche erfordert.</li>
+                                    <li><b>Falsche Spielversion:</b> Der Code stammt von einer anderen Spielregion (z.B. PAL statt NTSC). Codes sind selten regionsübergreifend kompatibel.</li>
+                                </ul>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+            </section>
+            
+            <section id="beispiel">
+                <h2 class="text-3xl font-bold text-center mb-12 text-slate-900">Anwendungsbeispiel: SSX 3</h2>
+                 <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h3 class="text-xl font-bold mb-3 text-sky-600">Beispiel-PNACH-Codes für SSX 3 (08FFF00D)</h3>
+                    <p class="text-slate-600 mb-4">Hier sind Beispiele für PNACH-Codes, die für SSX 3 (CRC <code class="font-mono bg-slate-200 text-slate-800 px-1 rounded-md">08FFF00D</code>) verwendet werden können. Beachte, dass die genauen Adressen je nach Code-Quell (Codebreaker, Action Replay etc.) variieren können, aber das Format bleibt gleich. Diese Codes müssen in deine <code class="font-mono bg-slate-200 text-slate-800 px-1 rounded-md">08FFF00D.pnach</code> Datei kopiert werden.</p>
+                     <div class="bg-slate-800 text-white font-mono p-4 rounded-lg text-sm md:text-base overflow-x-auto mb-4">
+                        <span class="text-slate-400">// Infinite Money by Code Master (Codebreaker v1-6 / Xploder v1-3)</span><br>
+                        <span class="text-purple-400">patch=1,EE,</span><span class="text-red-400">14401415</span><span class="text-purple-400">,extended,</span><span class="text-cyan-400">0000FFFF</span><br>
+                        <br>
+                        <span class="text-slate-400">// Max Acceleration by Codejunkies (Action Replay v1 / GameShark v1)</span><br>
+                        <span class="text-purple-400">patch=1,EE,</span><span class="text-red-400">FEB430AE</span><span class="text-purple-400">,extended,</span><span class="text-cyan-400">BCA99BBA</span><br>
+                        <br>
+                        <span class="text-slate-400">// Max Acceleration by Codejunkies (ARMax)</span><br>
+                        <span class="text-slate-400">// ARMax Codes sind direkt als Patch=1 Zeilen schwieriger zu konvertieren und erfordern oft spezielle Konverter.</span><br>
+                        <span class="text-slate-400">// DDDY-QUA0-426C6</span><br>
+                        <span class="text-slate-400">// 0XGJ-CY33-P8058</span><br>
+                        <br>
+                        <span class="text-slate-400">// Max All Stats by Codejunkies (Action Replay v1 / GameShark v1)</span><br>
+                        <span class="text-purple-400">patch=1,EE,</span><span class="text-red-400">FEB430AF</span><span class="text-purple-400">,extended,</span><span class="text-cyan-400">BCA99BBA</span><br>
+                        <span class="text-purple-400">patch=1,EE,</span><span class="text-red-400">DEB430AE</span><span class="text-purple-400">,extended,</span><span class="text-cyan-400">F3E0D2BA</span><br>
+                        <span class="text-purple-400">patch=1,EE,</span><span class="text-red-400">CEB430AA</span><span class="text-purple-400">,extended,</span><span class="text-cyan-400">BCA9D2BA</span><br>
+                        <br>
+                        <span class="text-slate-400">// Max All Stats by Codejunkies (ARMax)</span><br>
+                        <span class="text-slate-400">// Auch hier erfordern ARMax Codes oft spezielle Konverter.</span><br>
+                        <span class="text-slate-400">// B2BC-TW6N-HZ6DY</span><br>
+                        <span class="text-slate-400">// 880D-TOFU-ADC4P</span><br>
+                        <span class="text-slate-400">// 5X60-NOQN-CXUER</span><br>
+                        <span class="text-slate-400">// RHDW-7219-A2001</span>
+                    </div>
+                     <div class="mt-4 bg-red-100 border-l-4 border-red-500 text-red-800 p-4 rounded-md text-sm">
+                         <b>Achtung:</b> Die gezeigten ARMax-Codes (z.B. DDDY-QUA0-426C6) sind im Allgemeinen nicht direkt als PNACH-Codes verwendbar. Sie erfordern spezielle Konverter, um in das `patch=1,EE,Adresse,extended,Wert`-Format umgewandelt zu werden. Die "Action Replay v1 / GameShark v1"-Codes sind hier die einfacheren Beispiele für die direkte PNACH-Nutzung. Verwende niemals Codes von anderen Spielen oder falschen Versionen! Ein Code für SSX (CRC `085653F4`) funktioniert NICHT für SSX 3 und führt zu Abstürzen.
+                    </div>
+                </div>
+                <div class="mt-8 bg-white p-6 rounded-lg shadow-md border border-slate-200">
+                    <h3 class="text-xl font-bold mb-3 text-sky-600">Alternative: In-Game Passwörter</h3>
+                    <p class="text-slate-600 mb-4">SSX 3 bietet viele Cheats, die direkt im Spiel unter `Optionen > Cheats eingeben` aktiviert werden können. Hier ist eine Liste als schnelle Alternative:</p>
+                    <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-4">
+                         <input type="text" id="password-search" class="block w-full md:w-1/2 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Filtere nach Effekt...">
+                        <select id="category-filter" class="block w-full md:w-1/2 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                            <option value="Alle">Alle Kategorien</option>
+                            <option value="Freischaltungen">Freischaltungen (Allgemein)</option>
+                            <option value="Charaktere/Skins">Charaktere/Skins</option>
+                        </select>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-500">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Effekt</th>
+                                    <th scope="col" class="px-6 py-3">Passwort</th>
+                                </tr>
+                            </thead>
+                            <tbody id="password-table">
+                                <!-- Passwörter werden hier dynamisch geladen -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="pnach-codes">
+                <h2 class="text-3xl font-bold text-center mb-12 text-slate-900">Alle PNACH-Codes für SSX 3 (NTSC-U)</h2>
+                <p class="text-slate-600 mb-4">Hier findest du eine umfassende Liste von PNACH-Codes, die aus der von dir bereitgestellten Datei `SSX 3 (NTSC-U).txt` extrahiert wurden. Diese Codes können in deine <code class="font-mono bg-slate-200 text-slate-800 px-1 rounded-md">08FFF00D.pnach</code> Datei kopiert werden.</p>
+                <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-4">
+                    <input type="text" id="pnach-search" class="block w-full md:w-1/2 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Suche nach Code-Beschreibung oder Autor...">
+                    <select id="pnach-category-filter" class="block w-full md:w-1/2 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                        <option value="Alle">Alle Kategorien</option>
+                        <option value="Grundlagen/Enable Codes">Grundlagen/Enable Codes</option>
+                        <option value="Charakter-Statistiken">Charakter-Statistiken</option>
+                        <option value="Geld/Belohnungen">Geld/Belohnungen</option>
+                        <option value="Herausforderungen/Medaillen">Herausforderungen/Medaillen</option>
+                        <option value="Sammlerstücke">Sammlerstücke</option>
+                        <option value="Gameplay-Modifikatoren">Gameplay-Modifikatoren</option>
+                        <option value="Debug/Entwickler">Debug/Entwickler</option>
+                    </select>
+                </div>
+                <div class="overflow-x-auto bg-white p-4 rounded-lg shadow-md border border-slate-200">
+                    <table class="w-full text-sm text-left text-slate-500">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Beschreibung</th>
+                                <th scope="col" class="px-6 py-3">Autor</th>
+                                <th scope="col" class="px-6 py-3">Code</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pnach-table-body" class="font-mono text-xs">
+                            <!-- PNACH codes will be dynamically loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+    
+    <footer class="text-center mt-24 py-8 border-t border-slate-200">
+        <p class="text-slate-500">Ein interaktiver Guide, um die Macht der Emulation zu entfesseln. Viel Spaß beim Experimentieren!</p>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Mobile Menu Toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // Tabs
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.dataset.target;
+            
+            tabButtons.forEach(btn => {
+                btn.classList.remove('text-sky-600', 'border-sky-500');
+                btn.classList.add('text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+            });
+            button.classList.add('text-sky-600', 'border-sky-500');
+            button.classList.remove('text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+
+            tabContents.forEach(content => {
+                if (content.id === targetId) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    // Accordion
+    const accordionItems = document.querySelectorAll('.accordion-item');
+    accordionItems.forEach(item => {
+        const header = item.querySelector('.accordion-header');
+        const content = item.querySelector('.accordion-content');
+        const icon = item.querySelector('.accordion-icon');
+        header.addEventListener('click', () => {
+            const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+            
+            // Close all other accordions
+            accordionItems.forEach(otherItem => {
+                if (otherItem !== item) {
+                    otherItem.querySelector('.accordion-content').style.maxHeight = '0px';
+                    otherItem.querySelector('.accordion-icon').style.transform = 'rotate(0deg)';
+                }
+            });
+
+            if (isOpen) {
+                content.style.maxHeight = '0px';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.style.transform = 'rotate(45deg)';
+            }
+        });
+    });
+
+    // Hex Converter
+    const decInput = document.getElementById('dec-input');
+    const hexOutput = document.getElementById('hex-output');
+    decInput.addEventListener('input', (e) => {
+        const decValue = parseInt(e.target.value, 10);
+        if (isNaN(decValue)) {
+            hexOutput.textContent = '00000000';
+            return;
+        }
+        let hexValue = decValue.toString(16).toUpperCase();
+        hexOutput.textContent = hexValue.padStart(8, '0');
+    });
+
+    // In-Game Password Data and Filtering
+    const inGameCheats = [
+        { password: 'graphicdelight', effect: 'Alle Boards', category: 'Freischaltungen' },
+        { password: 'biggerthank7', effect: 'Alle Gipfel', category: 'Freischaltungen' },
+        { password: 'djsuperstar', effect: 'Alle Playlist-Songs', category: 'Freischaltungen' },
+        { password: 'naturalconcept', effect: 'Alle Kunstwerke', category: 'Freischaltungen' },
+        { password: 'postnobills', effect: 'Alle Poster', category: 'Freischaltungen' },
+        { password: 'nogluerequired', effect: 'Alle Spielzeuge', category: 'Freischaltungen' },
+        { password: 'gotitgotitneedit', effect: 'Alle Sammelkarten', category: 'Freischaltungen' },
+        { password: 'myeyesaredim', effect: 'Alle Videos', category: 'Freischaltungen' },
+        { password: 'shoppingspree', effect: 'Alle Lodge 1 Outfits', category: 'Freischaltungen' },
+        { password: 'finallymadeitin', effect: 'Unbekannten Fahrer freischalten', category: 'Charaktere/Skins' },
+        { password: 'greatwhitenorth', effect: 'Canhuck freischalten', category: 'Charaktere/Skins' },
+        { password: 'betyouveneverseen', effect: 'Schneebälle freischalten', category: 'Freischaltungen' },
+        { password: 'tankengine', effect: 'Churchill freischalten', category: 'Charaktere/Skins' },
+        { password: 'milkemdaisy', effect: 'Cudmore the Cow freischalten', category: 'Charaktere/Skins' },
+        { password: 'worm', effect: 'Eddie freischalten', category: 'Charaktere/Skins' },
+        { password: 'boneyardreject', effect: 'Gutless freischalten', category: 'Charaktere/Skins' },
+        { password: 'brokenleg', effect: 'Jurgen freischalten', category: 'Charaktere/Skins' },
+        { password: 'bronco', effect: 'Luther freischalten', category: 'Charaktere/Skins' },
+        { password: 'callhimgeorge', effect: 'North West Legend freischalten', category: 'Charaktere/Skins' },
+        { password: 'windmilldunk', effect: 'Stretch freischalten', category: 'Charaktere/Skins' },
+        { password: 'wheresyourtail', effect: 'Bunny San freischalten', category: 'Charaktere/Skins' },
+        { password: 'slicksuit', effect: 'Hiro freischalten', category: 'Charaktere/Skins' },
+        { password: 'zenmaster', effect: 'Brodi freischalten', category: 'Charaktere/Skins' },
+        { password: 'back2future', effect: 'Marty freischalten', category: 'Charaktere/Skins' },
+        { password: 'notsosvelte', effect: 'Svelte Luther freischalten', category: 'Charaktere/Skins' },
+    ];
+
+    const passwordTableBody = document.getElementById('password-table');
+    const passwordSearch = document.getElementById('password-search');
+    const categoryFilter = document.getElementById('category-filter');
+
+    function renderCheats(cheatsToRender) {
+        passwordTableBody.innerHTML = ''; // Clear existing rows
+        if (cheatsToRender.length === 0) {
+            passwordTableBody.innerHTML = '<tr><td colspan="2" class="px-6 py-4 text-center text-slate-500">Keine Cheats gefunden.</td></tr>';
+            return;
+        }
+        cheatsToRender.forEach(cheat => {
+            const row = document.createElement('tr');
+            row.classList.add('bg-white', 'border-b', 'hover:bg-slate-50');
+            row.setAttribute('data-category', cheat.category); // Add category data attribute
+
+            const effectCell = document.createElement('td');
+            effectCell.classList.add('px-6', 'py-4', 'font-medium', 'text-slate-900');
+            effectCell.textContent = cheat.effect;
+            row.appendChild(effectCell);
+
+            const passwordCell = document.createElement('td');
+            passwordCell.classList.add('px-6', 'py-4', 'font-mono');
+            passwordCell.textContent = cheat.password;
+            row.appendChild(passwordCell);
+
+            passwordTableBody.appendChild(row);
+        });
+    }
+
+    function applyFilters() {
+        const searchText = passwordSearch.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+
+        const filteredCheats = inGameCheats.filter(cheat => {
+            const matchesSearch = cheat.effect.toLowerCase().includes(searchText) || 
+                                  cheat.password.toLowerCase().includes(searchText);
+            const matchesCategory = selectedCategory === 'Alle' || cheat.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        });
+        renderCheats(filteredCheats);
+    }
+
+    // Initial render
+    renderCheats(inGameCheats);
+
+    // Event listeners for filtering
+    passwordSearch.addEventListener('keyup', applyFilters);
+    categoryFilter.addEventListener('change', applyFilters);
+    
+    // PNACH Codes Data and Filtering - Reduced to approx 150 important patches
+    const pnachCodesData = [
+        {
+            description: "[(M) Must Be On]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DEADFACE,extended,04030209\\npatch=1,EE,F028784E,extended,58F6D1E5",
+            category: "Grundlagen/Enable Codes"
+        },
+        {
+            description: "[Max Stat Codes\\Acceleration]",
+            author: "Code Master",
+            code: "patch=1,EE,004AD5B8,extended,00000037\\npatch=1,EE,004A8810,extended,00000037\\npatch=1,EE,004AF4C8,extended,00000037\\npatch=1,EE,004A7888,extended,00000037\\npatch=1,EE,004A9798,extended,00000037\\npatch=1,EE,004AE540,extended,00000037\\npatch=1,EE,004B0450,extended,00000037\\npatch=1,EE,004AC630,extended,00000037\\npatch=1,EE,004AB6A8,extended,00000037\\npatch=1,EE,004AA720,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Zoe Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE25C2D2,extended,51B6D565\\npatch=1,EE,EE25C2CE,extended,51B6CD65\\npatch=1,EE,EE25C3DA,extended,51B6D565\\npatch=1,EE,EE25C3D6,extended,51B6D565\\npatch=1,EE,EE25C362,extended,51B6D565\\npatch=1,EE,EE25C35E,extended,51B6D575\\npatch=1,EE,EE25C36A,extended,51B6D565\\npatch=1,EE,EE25C366,extended,51B6D565\\npatch=1,EE,EE25C372,extended,51AAC565\\npatch=1,EE,EE25C36E,extended,51A6D565\\npatch=1,EE,EE25C37A,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Moby Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE25F8B2,extended,51B6D565\\npatch=1,EE,EE25F8AE,extended,51B6CD65\\npatch=1,EE,EE25F8BA,extended,51B6D565\\npatch=1,EE,EE25F8B6,extended,51B6D565\\npatch=1,EE,EE25F8C2,extended,51B6D565\\npatch=1,EE,EE25F8BE,extended,51B6D575\\npatch=1,EE,EE25F8CA,extended,51B6D565\\npatch=1,EE,EE25F8C6,extended,51B6D565\\npatch=1,EE,EE25F8D2,extended,51AAC565\\npatch=1,EE,EE25F8CE,extended,51A6D565\\npatch=1,EE,EE25F9DA,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Psymon Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE258572,extended,51B6D565\\npatch=1,EE,EE25856E,extended,51B6CD65\\npatch=1,EE,EE25857A,extended,51B6D565\\npatch=1,EE,EE258576,extended,51B6D565\\npatch=1,EE,EE258582,extended,51B6D565\\npatch=1,EE,EE25857E,extended,51B6D575\\npatch=1,EE,EE25858A,extended,51B6D565\\npatch=1,EE,EE258586,extended,51B6D565\\npatch=1,EE,EE258592,extended,51AAC565\\npatch=1,EE,EE25858E,extended,51A6D565\\npatch=1,EE,EE25859A,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Griff Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE25B25A,extended,51B6D565\\npatch=1,EE,EE25B256,extended,51B6CD65\\npatch=1,EE,EE25B2E2,extended,51B6D565\\npatch=1,EE,EE25B2DE,extended,51B6D565\\npatch=1,EE,EE25B2EA,extended,51B6D565\\npatch=1,EE,EE25B2E6,extended,51B6D575\\npatch=1,EE,EE25B2F2,extended,51B6D565\\npatch=1,EE,EE25B2EE,extended,51B6D565\\npatch=1,EE,EE25B2FA,extended,51AAC565\\npatch=1,EE,EE25B2F6,extended,51A6D565\\npatch=1,EE,EE25B202,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Viggo Codes: Cheats\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE2474FA,extended,51B6D565\\npatch=1,EE,EE2474F6,extended,51B6CD65\\npatch=1,EE,EE247402,extended,51B6D565\\npatch=1,EE,EE2474FE,extended,51B6D565\\npatch=1,EE,EE24740A,extended,51B6D565\\npatch=1,EE,EE247406,extended,51B6D575\\npatch=1,EE,EE247412,extended,51B6D565\\npatch=1,EE,EE24740E,extended,51B6D565\\npatch=1,EE,EE24741A,extended,51AAC565\\npatch=1,EE,EE247416,extended,51A6D565\\npatch=1,EE,EE2474A2,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Elise Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE25A262,extended,51B6D565\\npatch=1,EE,EE25A25E,extended,51B6CD65\\npatch=1,EE,EE25A26A,extended,51B6D565\\npatch=1,EE,EE25A266,extended,51B6D565\\npatch=1,EE,EE25A272,extended,51B6D565\\npatch=1,EE,EE25A26E,extended,51B6D575\\npatch=1,EE,EE25A27A,extended,51B6D565\\npatch=1,EE,EE25A276,extended,51B6D565\\npatch=1,EE,EE25A282,extended,51AAC565\\npatch=1,EE,EE25A27E,extended,51A6D565\\npatch=1,EE,EE25A28A,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Nate Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE2595EA,extended,51B6D565\\npatch=1,EE,EE2595E6,extended,51B6CD65\\npatch=1,EE,EE2595F2,extended,51B6D565\\npatch=1,EE,EE2595EE,extended,51B6D565\\npatch=1,EE,EE2595FA,extended,51B6D565\\npatch=1,EE,EE2595F6,extended,51B6D575\\npatch=1,EE,EE259502,extended,51B6D565\\npatch=1,EE,EE2595FE,extended,51B6D565\\npatch=1,EE,EE25950A,extended,51AAC565\\npatch=1,EE,EE259506,extended,51A6D565\\npatch=1,EE,EE259512,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Mac Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE25D34A,extended,51B6D565\\npatch=1,EE,EE25D346,extended,51B6CD65\\npatch=1,EE,EE25D352,extended,51B6D565\\npatch=1,EE,EE25D34E,extended,51B6D565\\npatch=1,EE,EE25D35A,extended,51B6D565\\npatch=1,EE,EE25D356,extended,51B6D575\\npatch=1,EE,EE25D3E2,extended,51B6D565\\npatch=1,EE,EE25D3DE,extended,51B6D565\\npatch=1,EE,EE25D3EA,extended,51AAC565\\npatch=1,EE,EE25D3E6,extended,51A6D565\\npatch=1,EE,EE25D3F2,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Allegra Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE25E3C2,extended,51B6D565\\npatch=1,EE,EE25E3BE,extended,51B6CD65\\npatch=1,EE,EE25E3CA,extended,51B6D565\\npatch=1,EE,EE25E3C6,extended,51B6D565\\npatch=1,EE,EE25E3D2,extended,51B6D565\\npatch=1,EE,EE25E3CE,extended,51B6D575\\npatch=1,EE,EE25D8DA,extended,51B6D565\\npatch=1,EE,EE25D8D6,extended,51B6D565\\npatch=1,EE,EE25D862,extended,51AAC565\\npatch=1,EE,EE25D85E,extended,51A6D565\\npatch=1,EE,EE25D86A,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Kaori Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,EE25E83A,extended,51B6D565\\npatch=1,EE,EE25E836,extended,51B6CD65\\npatch=1,EE,EE25E842,extended,51B6D565\\npatch=1,EE,EE25E83E,extended,51B6D565\\npatch=1,EE,EE25E84A,extended,51B6D565\\npatch=1,EE,EE25E846,extended,51B6D575\\npatch=1,EE,EE25E852,extended,51B6D565\\npatch=1,EE,EE25E84E,extended,51B6D565\\npatch=1,EE,EE25E85A,extended,51AAC565\\npatch=1,EE,EE25E856,extended,51A6D565\\npatch=1,EE,EE25E8E2,extended,50B5C565",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Zoe Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204AB9F8,extended,FFFFFFFF\\npatch=1,EE,204AB9FC,extended,FFFF07FF\\npatch=1,EE,204ABA00,extended,FFFFFFFF\\npatch=1,EE,204ABA04,extended,FFFFFFFF\\npatch=1,EE,204ABA08,extended,FFFFFFFF\\npatch=1,EE,204ABA0C,extended,FFFFFF0F\\npatch=1,EE,204ABA10,extended,FFFFFFFF\\npatch=1,EE,204ABA14,extended,FFFFFFFF\\npatch=1,EE,204ABA18,extended,FF030FFF\\npatch=1,EE,204ABA1C,extended,FF0FFFFF\\npatch=1,EE,204ABA20,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Moby Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204A7BD8,extended,FFFFFFFF\\npatch=1,EE,204A7BDC,extended,FFFF07FF\\npatch=1,EE,204A7BE0,extended,FFFFFFFF\\npatch=1,EE,204A7BE4,extended,FFFFFFFF\\npatch=1,EE,204A7BE8,extended,FFFFFFFF\\npatch=1,EE,204A7BEC,extended,FFFFFF0F\\npatch=1,EE,204A7BF0,extended,FFFFFFFF\\npatch=1,EE,204A7BF4,extended,FFFFFFFF\\npatch=1,EE,204A7BF8,extended,FF030FFF\\npatch=1,EE,204A7BFC,extended,FF0FFFFF\\npatch=1,EE,204A7C00,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Psymon Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204AF818,extended,FFFFFFFF\\npatch=1,EE,204AF81C,extended,FFFF07FF\\npatch=1,EE,204AF820,extended,FFFFFFFF\\npatch=1,EE,204AF824,extended,FFFFFFFF\\npatch=1,EE,204AF828,extended,FFFFFFFF\\npatch=1,EE,204AF82C,extended,FFFFFF0F\\npatch=1,EE,204AF830,extended,FFFFFFFF\\npatch=1,EE,204AF834,extended,FFFFFFFF\\npatch=1,EE,204AF838,extended,FF030FFF\\npatch=1,EE,204AF83C,extended,FF0FFFFF\\npatch=1,EE,204AF840,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Griff Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204AC980,extended,FFFFFFFF\\npatch=1,EE,204AC984,extended,FFFF07FF\\npatch=1,EE,204AC988,extended,FFFFFFFF\\npatch=1,EE,204AC98C,extended,FFFFFFFF\\npatch=1,EE,204AC990,extended,FFFFFFFF\\npatch=1,EE,204AC994,extended,FFFFFF0F\\npatch=1,EE,204AC998,extended,FFFFFFFF\\npatch=1,EE,204AC99C,extended,FFFFFFFF\\npatch=1,EE,204AC9A0,extended,FF030FFF\\npatch=1,EE,204AC9A4,extended,FF0FFFFF\\npatch=1,EE,204AC9A8,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Viggo Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204B07A0,extended,FFFFFFFF\\npatch=1,EE,204B07A4,extended,FFFF07FF\\npatch=1,EE,204B07A8,extended,FFFFFFFF\\npatch=1,EE,204B07AC,extended,FFFFFFFF\\npatch=1,EE,204B07B0,extended,FFFFFFFF\\npatch=1,EE,204B07B4,extended,FFFFFF0F\\npatch=1,EE,204B07B8,extended,FFFFFFFF\\npatch=1,EE,204B07BC,extended,FFFFFFFF\\npatch=1,EE,204B07C0,extended,FF030FFF\\npatch=1,EE,204B07C4,extended,FF0FFFFF\\npatch=1,EE,204B07C8,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Elise Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204AD908,extended,FFFFFFFF\\npatch=1,EE,204AD90C,extended,FFFF07FF\\npatch=1,EE,204AD910,extended,FFFFFFFF\\npatch=1,EE,204AD914,extended,FFFFFFFF\\npatch=1,EE,204AD918,extended,FFFFFFFF\\npatch=1,EE,204AD91C,extended,FFFFFF0F\\npatch=1,EE,204AD920,extended,FFFFFFFF\\npatch=1,EE,204AD924,extended,FFFFFFFF\\npatch=1,EE,204AD928,extended,FF030FFF\\npatch=1,EE,204AD92C,extended,FF0FFFFF\\npatch=1,EE,204AD930,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Nate Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204AE890,extended,FFFFFFFF\\npatch=1,EE,204AE894,extended,FFFF07FF\\npatch=1,EE,204AE898,extended,FFFFFFFF\\npatch=1,EE,204AE89C,extended,FFFFFFFF\\npatch=1,EE,204AE8A0,extended,FFFFFFFF\\npatch=1,EE,204AE8A4,extended,FFFFFF0F\\npatch=1,EE,204AE8A8,extended,FFFFFFFF\\npatch=1,EE,204AE8AC,extended,FFFFFFFF\\npatch=1,EE,204AE8B0,extended,FF030FFF\\npatch=1,EE,204AE8B4,extended,FF0FFFFF\\npatch=1,EE,204AE8B8,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Mac Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204AAA70,extended,FFFFFFFF\\npatch=1,EE,204AAA74,extended,FFFF07FF\\npatch=1,EE,204AAA78,extended,FFFFFFFF\\npatch=1,EE,204AAA7C,extended,FFFFFFFF\\npatch=1,EE,204AAA80,extended,FFFFFFFF\\npatch=1,EE,204AAA84,extended,FFFFFF0F\\npatch=1,EE,204AAA88,extended,FFFFFFFF\\npatch=1,EE,204AAA8C,extended,FFFFFFFF\\npatch=1,EE,204AAA90,extended,FF030FFF\\npatch=1,EE,204AAA94,extended,FF0FFFFF\\npatch=1,EE,204AAA98,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Allegra Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204A9AE8,extended,FFFFFFFF\\npatch=1,EE,204A9AEC,extended,FFFF07FF\\npatch=1,EE,204A9AF0,extended,FFFFFFFF\\npatch=1,EE,204A9AF4,extended,FFFFFFFF\\npatch=1,EE,204A9AF8,extended,FFFFFFFF\\npatch=1,EE,204A9AFC,extended,FFFFFF0F\\npatch=1,EE,204A9B00,extended,FFFFFFFF\\npatch=1,EE,204A9B04,extended,FFFFFFFF\\npatch=1,EE,204A9B08,extended,FF030FFF\\npatch=1,EE,204A9B0C,extended,FF0FFFFF\\npatch=1,EE,204A9B10,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Kaori Codes\\All Rewards]",
+            author: "Codejunkies",
+            code: "patch=1,EE,204A8B60,extended,FFFFFFFF\\npatch=1,EE,204A8B64,extended,FFFF07FF\\npatch=1,EE,204A8B68,extended,FFFFFFFF\\npatch=1,EE,204A8B6C,extended,FFFFFFFF\\npatch=1,EE,204A8B70,extended,FFFFFFFF\\npatch=1,EE,204A8B74,extended,FFFFFF0F\\npatch=1,EE,204A8B78,extended,FFFFFFFF\\npatch=1,EE,204A8B7C,extended,FFFFFFFF\\npatch=1,EE,204A8B80,extended,FF030FFF\\npatch=1,EE,204A8B84,extended,FF0FFFFF\\npatch=1,EE,204A8B88,extended,00000FFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Max Stat Codes\\All Stats]",
+            author: "Code Master",
+            code: "patch=1,EE,004AD5B7,extended,00000037\\npatch=1,EE,204AD5B8,extended,37373737\\npatch=1,EE,104AD5BC,extended,00003737\\npatch=1,EE,004A880F,extended,00000037\\npatch=1,EE,204A8810,extended,37373737\\npatch=1,EE,104A8814,extended,00003737\\npatch=1,EE,004AF4C7,extended,00000037\\npatch=1,EE,204AF4C8,extended,37373737\\npatch=1,EE,104AF4CC,extended,00003737\\npatch=1,EE,004A7887,extended,00000037\\npatch=1,EE,204A7888,extended,37373737\\npatch=1,EE,104A788C,extended,00003737\\npatch=1,EE,004A9797,extended,00000037\\npatch=1,EE,204A9798,extended,37373737\\npatch=1,EE,104A979C,extended,00003737\\npatch=1,EE,004AE53F,extended,00000037\\npatch=1,EE,204AE540,extended,37373737\\npatch=1,EE,104AE544,extended,00003737\\npatch=1,EE,004B044F,extended,00000037\\npatch=1,EE,204B0450,extended,37373737\\npatch=1,EE,104B0454,extended,00003737\\npatch=1,EE,004AC62F,extended,00000037\\npatch=1,EE,204AC630,extended,37373737\\npatch=1,EE,104AC634,extended,00003737\\npatch=1,EE,004AB6A7,extended,00000037\\npatch=1,EE,204AB6A8,extended,37373737\\npatch=1,EE,104AB6AC,extended,00003737\\npatch=1,EE,004AA71F,extended,00000037\\npatch=1,EE,204AA720,extended,37373737\\npatch=1,EE,104AA724,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Black Station]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACAD8,extended,00000005\\npatch=1,EE,204A7D30,extended,00000005\\npatch=1,EE,204AE9E8,extended,00000005\\npatch=1,EE,204A6DA8,extended,00000005\\npatch=1,EE,204A8CB8,extended,00000005\\npatch=1,EE,204ADA60,extended,00000005\\npatch=1,EE,204AF970,extended,00000005\\npatch=1,EE,204ABB50,extended,00000005\\npatch=1,EE,204AABC8,extended,00000005\\npatch=1,EE,204A9C40,extended,00000005",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Blue Station]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACAB4,extended,00000005\\npatch=1,EE,204A7D0C,extended,00000005\\npatch=1,EE,204AE9C4,extended,00000005\\npatch=1,EE,204A6D84,extended,00000005\\npatch=1,EE,204A8C94,extended,00000005\\npatch=1,EE,204ADA3C,extended,00000005\\npatch=1,EE,204AF94C,extended,00000005\\npatch=1,EE,204ABB2C,extended,00000005\\npatch=1,EE,204AABA4,extended,00000005\\npatch=1,EE,204A9C1C,extended,00000005",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Miscellaneous Codes\\Buying Attributes Doesn't Decrease Money]",
+            author: "Code Master",
+            code: "patch=1,EE,20150E04,extended,00000000",
+            category: "Gameplay-Modifikatoren"
+        },
+        {
+            description: "[Miscellaneous Codes\\Buying Gear/Rewards Doesn't Decrease Money]",
+            author: "Code Master",
+            code: "patch=1,EE,20150B7C,extended,00000000",
+            category: "Gameplay-Modifikatoren"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Crow's Nest]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACA3C,extended,00000002\\npatch=1,EE,204A7C94,extended,00000002\\npatch=1,EE,204AE94C,extended,00000002\\npatch=1,EE,204A6D0C,extended,00000002\\npatch=1,EE,204A8C1C,extended,00000002\\npatch=1,EE,204AD9C4,extended,00000002\\npatch=1,EE,204AF8D4,extended,00000002\\npatch=1,EE,204ABAB4,extended,00000002\\npatch=1,EE,204AAB2C,extended,00000002\\npatch=1,EE,204A9BA4,extended,00000002",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Debug Menu After the \"Press START Button\" Screen]",
+            author: "punk7890",
+            code: "patch=1,EE,001949B6,extended,00000037",
+            category: "Debug/Entwickler"
+        },
+        {
+            description: "[Debug Menu Before Opening Logos]",
+            author: "punk7890",
+            code: "patch=1,EE,204C9488,extended,00000000",
+            category: "Debug/Entwickler"
+        },
+        {
+            description: "[Max Stat Codes\\Edging]",
+            author: "Code Master",
+            code: "patch=1,EE,004AD5BA,extended,00000037\\npatch=1,EE,004A8812,extended,00000037\\npatch=1,EE,004AF4CA,extended,00000037\\npatch=1,EE,004A788A,extended,00000037\\npatch=1,EE,004A979A,extended,00000037\\npatch=1,EE,004AE542,extended,00000037\\npatch=1,EE,004B0452,extended,00000037\\npatch=1,EE,004AC632,extended,00000037\\npatch=1,EE,004AB6AA,extended,00000037\\npatch=1,EE,004AA722,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Enable Code]",
+            author: "lee4",
+            code: "patch=1,EE,903FFBE4,extended,00832021",
+            category: "Grundlagen/Enable Codes"
+        },
+        {
+            description: "[Enable Code]",
+            author: "lee4",
+            code: "patch=1,EE,9031AF98,extended,0C103F24",
+            category: "Grundlagen/Enable Codes"
+        },
+        {
+            description: "[Enable Code]",
+            author: "lee4",
+            code: "patch=1,EE,904261D8,extended,0C10981E",
+            category: "Grundlagen/Enable Codes"
+        },
+        {
+            description: "[Miscellaneous Codes\\Enable Code (Must Be On)]",
+            author: "Code Master",
+            code: "patch=1,EE,F0100008,extended,003FFB7F",
+            category: "Grundlagen/Enable Codes"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Gravitude]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACA0C,extended,0000001E\\npatch=1,EE,204A7C64,extended,0000001E\\npatch=1,EE,204AE91C,extended,0000001E\\npatch=1,EE,204A6CDC,extended,0000001E\\npatch=1,EE,204A8BEC,extended,0000001E\\npatch=1,EE,204AD994,extended,0000001E\\npatch=1,EE,204AF8A4,extended,0000001E\\npatch=1,EE,204ABA84,extended,0000001E\\npatch=1,EE,204AAAFC,extended,0000001E\\npatch=1,EE,204A9B74,extended,0000001E",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Green Station]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACAA8,extended,00000005\\npatch=1,EE,204A7D00,extended,00000005\\npatch=1,EE,204AE9B8,extended,00000005\\npatch=1,EE,204A6D78,extended,00000005\\npatch=1,EE,204A8C88,extended,00000005\\npatch=1,EE,204ADA30,extended,00000005\\npatch=1,EE,204AF940,extended,00000005\\npatch=1,EE,204ABB20,extended,00000005\\npatch=1,EE,204AAB98,extended,00000005\\npatch=1,EE,204A9C10,extended,00000005",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Happiness]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACA84,extended,0000002C\\npatch=1,EE,204A7CDC,extended,0000002C\\npatch=1,EE,204AE994,extended,0000002C\\npatch=1,EE,204A6D54,extended,0000002C\\npatch=1,EE,204A8C64,extended,0000002C\\npatch=1,EE,204ADA0C,extended,0000002C\\npatch=1,EE,204AF91C,extended,0000002C\\npatch=1,EE,204ABAFC,extended,0000002C\\npatch=1,EE,204AAB74,extended,0000002C\\npatch=1,EE,204A9BEC,extended,0000002C",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Elise Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204AD590,extended,03030303\\npatch=1,EE,204AD594,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Kaori Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204A87E8,extended,03030303\\npatch=1,EE,204A87EC,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Psymon Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204AF4A0,extended,03030303\\npatch=1,EE,204AF4A4,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Moby Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204A7860,extended,03030303\\npatch=1,EE,204A7864,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Allegra Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204A9770,extended,03030303\\npatch=1,EE,204A9774,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Nate Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204AE518,extended,03030303\\npatch=1,EE,204AE51C,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Viggo Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204B0428,extended,03030303\\npatch=1,EE,204B042C,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Griff Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204AC608,extended,03030303\\npatch=1,EE,204AC60C,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Zoe Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204AB680,extended,03030303\\npatch=1,EE,204AB684,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Mac Codes\\Have All Career Highlights]",
+            author: "Code Master",
+            code: "patch=1,EE,204AA6F8,extended,03030303\\npatch=1,EE,204AA6FC,extended,03030303",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Miscellaneous Codes\\Hella Quick Score Gain]",
+            author: "Code Master",
+            code: "patch=1,EE,20117750,extended,24427FFF\\npatch=1,EE,2011A45C,extended,24847FFF",
+            category: "Gameplay-Modifikatoren"
+        },
+        {
+            description: "[Miscellaneous Codes\\Infinite Boost]",
+            author: "Code Master",
+            code: "patch=1,EE,00C5E47C,extended,00000018\\npatch=1,EE,C0F458EC,extended,14870ECC\\npatch=1,EE,50E5C8C2,extended,AC0DA99A\\npatch=1,EE,50150DD3,extended,00000000\\npatch=1,EE,21341D8C,extended,1F24C2CB",
+            category: "Gameplay-Modifikatoren"
+        },
+        {
+            description: "[Elise Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104AD49C,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Kaori Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104A86F4,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Psymon Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104AF3AC,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Moby Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104A776C,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Allegra Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104A967C,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Nate Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104AE424,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Viggo Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104B0334,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Griff Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104AC514,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Zoe Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104AB58C,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Mac Codes\\Infinite Money]",
+            author: "Code Master",
+            code: "patch=1,EE,104AA604,extended,0000FFFF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Miscellaneous Codes\\Infinite Time]",
+            author: "Code Master",
+            code: "patch=1,EE,20113DD0,extended,00000000",
+            category: "Gameplay-Modifikatoren"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Intimidator]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACA00,extended,00000019\\npatch=1,EE,204A7C58,extended,00000019\\npatch=1,EE,204AE910,extended,00000019\\npatch=1,EE,204A6CD0,extended,00000019\\npatch=1,EE,204A8BE0,extended,00000019\\npatch=1,EE,204AD988,extended,00000019\\npatch=1,EE,204AF898,extended,00000019\\npatch=1,EE,204ABA78,extended,00000019\\npatch=1,EE,204AAAF0,extended,00000019\\npatch=1,EE,204A9B68,extended,00000019",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Kick Doubt]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACA30,extended,0000001E\\npatch=1,EE,204A7C88,extended,0000001E\\npatch=1,EE,204AE940,extended,0000001E\\npatch=1,EE,204A6D00,extended,0000001E\\npatch=1,EE,204A8C10,extended,0000001E\\npatch=1,EE,204AD9B8,extended,0000001E\\npatch=1,EE,204AF8C8,extended,0000001E\\npatch=1,EE,204ABAA8,extended,0000001E\\npatch=1,EE,204AAB20,extended,0000001E\\npatch=1,EE,204A9B98,extended,0000001E",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Launch Time]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACA48,extended,00000004\\npatch=1,EE,204A7CA0,extended,00000004\\npatch=1,EE,204AE958,extended,00000004\\npatch=1,EE,204A6D18,extended,00000004\\npatch=1,EE,204A8C28,extended,00000004\\npatch=1,EE,204AD9D0,extended,00000004\\npatch=1,EE,204AF8E0,extended,00000004\\npatch=1,EE,204ABAC0,extended,00000004\\npatch=1,EE,204AAB38,extended,00000004\\npatch=1,EE,204A9BB0,extended,00000004",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Lodge Codes: Allegra: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A9798,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Allegra: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A9797,extended,00000037\\npatch=1,EE,204A9798,extended,37373737\\npatch=1,EE,0177CD6D,extended,000000C2",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Allegra: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204A967C,extended,05F5E0FF\\npatch=1,EE,204A9680,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Allegra: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A979A,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Allegra: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A9797,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Allegra: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A979B,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Allegra: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A979D,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Allegra: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A979C,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Allegra: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A9799,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Elise: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AD5B8,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Elise: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AD5B7,extended,00000037\\npatch=1,EE,204AD5B8,extended,37373737\\npatch=1,EE,104AD5BC,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Elise: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204AD49C,extended,05F5E0FF\\npatch=1,EE,204AD4A0,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Elise: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AD5BA,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Elise: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AD5B7,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Elise: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AD5BB,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Elise: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AD5BD,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Elise: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AD5BC,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Elise: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AD5B9,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Griff: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AC630,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Griff: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AC62F,extended,00000037\\npatch=1,EE,204AC630,extended,37373737\\npatch=1,EE,104AC634,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Griff: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204AC514,extended,05F5E0FF\\npatch=1,EE,204AC518,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Griff: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AC632,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Griff: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AC62F,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Griff: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AC633,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Griff: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AC635,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Griff: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AC634,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Griff: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AC631,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Kaori: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A8810,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Kaori: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A880F,extended,00000037\\npatch=1,EE,204A8810,extended,37373737\\npatch=1,EE,104A8814,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Kaori: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204A86F4,extended,05F5E0FF\\npatch=1,EE,204A86F8,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Kaori: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A8812,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Kaori: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A880F,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Kaori: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A8813,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Kaori: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A8815,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Kaori: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A8814,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Kaori: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A8811,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Mac: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AA720,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Mac: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AA71F,extended,00000037\\npatch=1,EE,204AA720,extended,37373737\\npatch=1,EE,104AA724,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Mac: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204AA604,extended,05F5E0FF\\npatch=1,EE,204AA608,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Mac: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AA722,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Mac: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AA71F,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Mac: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AA723,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Mac: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AA725,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Mac: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AA724,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Mac: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AA721,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Moby: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A7888,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Moby: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A7887,extended,00000037\\npatch=1,EE,204A7888,extended,37373737\\npatch=1,EE,104A788C,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Moby: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204A776C,extended,05F5E0FF\\npatch=1,EE,204A7770,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Moby: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A788A,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Moby: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A7887,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Moby: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A788B,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Moby: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A788D,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Moby: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A788C,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Moby: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004A7889,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Nate: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AE540,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Nate: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AE53F,extended,00000037\\npatch=1,EE,204AE540,extended,37373737\\npatch=1,EE,104AE544,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Nate: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204AE424,extended,05F5E0FF\\npatch=1,EE,204AE428,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Nate: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AE542,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Nate: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AE53F,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Nate: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AE543,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Nate: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AE545,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Nate: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AE544,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Nate: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AE541,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Psymon: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AF4C8,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Psymon: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AF4C7,extended,00000037\\npatch=1,EE,204AF4C8,extended,37373737\\npatch=1,EE,104AF4CC,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Psymon: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204AF3AC,extended,05F5E0FF\\npatch=1,EE,204AF3B0,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Psymon: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AF4CA,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Psymon: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AF4C7,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Psymon: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AF4CB,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Psymon: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AF4CD,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Psymon: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AF4CC,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Psymon: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AF4C9,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Viggo: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004B0450,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Viggo: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004B044F,extended,00000037\\npatch=1,EE,204B0450,extended,37373737\\npatch=1,EE,104B0454,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Viggo: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204B0334,extended,05F5E0FF\\npatch=1,EE,204B0338,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Viggo: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004B0452,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Viggo: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004B044F,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Viggo: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004B0453,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Viggo: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004B0455,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Viggo: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004B0454,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Viggo: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004B0451,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Zoe: Max Acceleration]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AB6AB,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Zoe: Max All Stats]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AB6A7,extended,00000037\\npatch=1,EE,204AB6A8,extended,37373737\\npatch=1,EE,104AB6AC,extended,00003737",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Zoe: Max Cash]",
+            author: "MadCatz",
+            code: "patch=1,EE,204AB58C,extended,05F5E0FF\\npatch=1,EE,204AB590,extended,05F5E0FF",
+            category: "Geld/Belohnungen"
+        },
+        {
+            description: "[Lodge Codes: Zoe: Max Edging]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AB6A9,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Zoe: Max Speed]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AB6A7,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Zoe: Max Spin]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AB6A8,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Zoe: Max Stability]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AB6AD,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Zoe: Max Toughness]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AB6AC,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Lodge Codes: Zoe: Max Tricks]",
+            author: "MadCatz",
+            code: "patch=1,EE,004AB6AA,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Zoe Codes\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025BFFF,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Moby Codes\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02505E2,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Psymon Codes\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02581A2,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Griff Codes\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025AF8A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Viggo Codes: Cheats\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C024712A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Elise Codes\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C0259E12,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Nate Codes\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C0258E9A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Mac Codes\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025D25A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Allegra Codes\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E2D2,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Kaori Codes\\Max Acceleration]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E74A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Zoe Codes\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC25C2D2,extended,2E26E7DD\\npatch=1,EE,CC25C2D6,extended,13C6D567\\npatch=1,EE,CC25C2D2,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Moby Codes\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC25F8B2,extended,2E26E7DD\\npatch=1,EE,CC25F8B6,extended,13C6D567\\npatch=1,EE,CC25F8B2,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Psymon Codes\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC258572,extended,2E26E7DD\\npatch=1,EE,CC258576,extended,13C6D567\\npatch=1,EE,CC258572,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Griff Codes\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC25B25A,extended,2E26E7DD\\npatch=1,EE,CC25B2E6,extended,13C6D567\\npatch=1,EE,CC25B25A,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Viggo Codes: Cheats\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC2474FA,extended,2E26E7DD\\npatch=1,EE,CC2474FE,extended,13C6D567\\npatch=1,EE,CC2474FA,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Elise Codes\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC25A262,extended,2E26E7DD\\npatch=1,EE,CC25A266,extended,13C6D567\\npatch=1,EE,CC25A262,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Nate Codes\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC2595EA,extended,2E26E7DD\\npatch=1,EE,CC2595EE,extended,13C6D567\\npatch=1,EE,CC2595EA,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Mac Codes\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC25D34A,extended,2E26E7DD\\npatch=1,EE,CC25D34E,extended,13C6D567\\npatch=1,EE,CC25D34A,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Allegra Codes\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC25E3C2,extended,2E26E7DD\\npatch=1,EE,CC25E3C6,extended,13C6D567\\npatch=1,EE,CC25E3C2,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Kaori Codes\\Max All Stats]",
+            author: "Codejunkies",
+            code: "patch=1,EE,DC25E83A,extended,2E26E7DD\\npatch=1,EE,CC25E83E,extended,13C6D567\\npatch=1,EE,CC25E83A,extended,B0A6CC6D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Zoe Codes\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025C30E,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Moby Codes\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025F90E,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Psymon Codes\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02585CE,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Griff Codes\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025B2BE,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Viggo Codes: Cheats\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C024747E,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Elise Codes\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025A276,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Nate Codes\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02595EE,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Mac Codes\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025D34E,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Allegra Codes\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E3CA,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Kaori Codes\\Max Speed]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E842,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Zoe Codes\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025C31A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Moby Codes\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025F91A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Psymon Codes\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02585DA,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Griff Codes\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025B2CA,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Viggo Codes: Cheats\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C024748A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Elise Codes\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025A282,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Nate Codes\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02595FA,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Mac Codes\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025D35A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Allegra Codes\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E3D6,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Kaori Codes\\Max Spin]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E84E,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Zoe Codes\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025C326,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Moby Codes\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025F926,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Psymon Codes\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02585E6,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Griff Codes\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025B2D6,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Viggo Codes: Cheats\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C0247496,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Elise Codes\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025A28E,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Nate Codes\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C0259606,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Mac Codes\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025D366,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Allegra Codes\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E3E2,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Kaori Codes\\Max Stability]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E85A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Zoe Codes\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025C322,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Moby Codes\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025F922,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Psymon Codes\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02585E2,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Griff Codes\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025B2D2,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Viggo Codes: Cheats\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C0247492,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Elise Codes\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025A28A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Nate Codes\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C0259602,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Mac Codes\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025D362,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Allegra Codes\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E3DE,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Kaori Codes\\Max Toughness]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E856,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Zoe Codes\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025C312,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Moby Codes\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025F912,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Psymon Codes\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02585D2,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Griff Codes\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025B2C2,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Viggo Codes: Cheats\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C0247482,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Elise Codes\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025A27A,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Nate Codes\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C02595F2,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Mac Codes\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025D352,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Allegra Codes\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E3CE,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Kaori Codes\\Max Tricks]",
+            author: "Codejunkies",
+            code: "patch=1,EE,C025E846,extended,58B5D42D",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Access All Peaks]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACC50,extended,00000000\\npatch=1,EE,204A7EA8,extended,00000000\\npatch=1,EE,204AEB60,extended,00000000\\npatch=1,EE,204A6F20,extended,00000000\\npatch=1,EE,204A8E30,extended,00000000\\npatch=1,EE,204ADBD8,extended,00000000\\npatch=1,EE,204AFAE8,extended,00000000\\npatch=1,EE,204ABCC8,extended,00000000\\npatch=1,EE,204AAD40,extended,00000000\\npatch=1,EE,204A9DB8,extended,00000000",
+            category: "Herausforderungen/Medaillen"
+        },
+        {
+            description: "[Have Big Challenges Completed Codes\\All Big Challenges]",
+            author: "Code Master",
+            code: "patch=1,EE,404ACAF0,extended,00220001\\npatch=1,EE,000000FF,extended,00000000\\npatch=1,EE,404A7D48,extended,00220001\\npatch=1,EE,000000FF,extended,00000000\\npatch=1,EE,404AEA00,extended,00220001\\npatch=1,EE,000000FF,extended,00000000\\npatch=1,EE,404A6DC0,extended,00220001\\npatch=1,EE,000000FF,extended,00000000\\npatch=1,EE,404A8CD0,extended,00220001\\npatch=1,EE,000000FF,extended,00000000\\npatch=1,EE,404ADA78,extended,00220001\\npatch=1,EE,000000FF,extended,00000000\\npatch=1,EE,404AF988,extended,00220001\\npatch=1,EE,000000FF,extended,00000000\\npatch=1,EE,404ABB68,extended,00220001\\npatch=1,EE,000000FF,extended,00000000\\npatch=1,EE,404AABE0,extended,00220001\\npatch=1,EE,000000FF,extended,00000000\\npatch=1,EE,404A9C58,extended,00220001\\npatch=1,EE,000000FF,extended,00000000",
+            category: "Herausforderungen/Medaillen"
+        },
+        {
+            description: "[Have Gold Medal Codes\\All Gold Medals]",
+            author: "Code Master",
+            code: "patch=1,EE,404AD508,extended,000E0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404A8760,extended,000E0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AF418,extended,000E0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404A77D8,extended,000E0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404A96E8,extended,000E0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AE490,extended,000E0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404B03A0,extended,000E0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AC580,extended,000E0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AB5F8,extended,000E0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AA670,extended,000E0002\\npatch=1,EE,00010001,extended,00000000",
+            category: "Herausforderungen/Medaillen"
+        },
+        {
+            description: "[Have Rival Challenge Completed Codes\\All Rival Challenges]",
+            author: "Code Master",
+            code: "patch=1,EE,404AD4A8,extended,000C0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404A8700,extended,000C0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AF3B8,extended,000C0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404A7778,extended,000C0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404A9688,extended,000C0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AE430,extended,000C0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404B0340,extended,000C0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AC520,extended,000C0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AB598,extended,000C0002\\npatch=1,EE,00010001,extended,00000000\\npatch=1,EE,404AA610,extended,000C0002\\npatch=1,EE,00010001,extended,00000000",
+            category: "Herausforderungen/Medaillen"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Yellow Station]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACAC0,extended,00000005\\npatch=1,EE,204A7D18,extended,00000005\\npatch=1,EE,204AE9D0,extended,00000005\\npatch=1,EE,204A6D90,extended,00000005\\npatch=1,EE,204A8CA0,extended,00000005\\npatch=1,EE,204ADA48,extended,00000005\\npatch=1,EE,204AF958,extended,00000005\\npatch=1,EE,204ABB38,extended,00000005\\npatch=1,EE,204AABB0,extended,00000005\\npatch=1,EE,204A9C28,extended,00000005",
+            category: "Sammlerstücke"
+        },
+        {
+            description: "[Max Stat Codes\\Jump]",
+            author: "Code Master",
+            code: "patch=1,EE,004AD5BE,extended,00000037\\npatch=1,EE,004A8816,extended,00000037\\npatch=1,EE,004AF4CE,extended,00000037\\npatch=1,EE,004A788E,extended,00000037\\npatch=1,EE,004A979E,extended,00000037\\npatch=1,EE,004AE546,extended,00000037\\npatch=1,EE,004B0456,extended,00000037\\npatch=1,EE,004AC636,extended,00000037\\npatch=1,EE,004AB6B2,extended,00000037\\npatch=1,EE,004AA726,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Max Stat Codes\\Speed]",
+            author: "Code Master",
+            code: "patch=1,EE,004AD5B7,extended,00000037\\npatch=1,EE,004A880F,extended,00000037\\npatch=1,EE,004AF4C7,extended,00000037\\npatch=1,EE,004A7887,extended,00000037\\npatch=1,EE,004A9797,extended,00000037\\npatch=1,EE,004AE53F,extended,00000037\\npatch=1,EE,004B044F,extended,00000037\\npatch=1,EE,004AC62F,extended,00000037\\npatch=1,EE,004AB6A7,extended,00000037\\npatch=1,EE,004AA71F,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Max Stat Codes\\Spin]",
+            author: "Code Master",
+            code: "patch=1,EE,004AD5BB,extended,00000037\\npatch=1,EE,004A8813,extended,00000037\\npatch=1,EE,004AF4CB,extended,00000037\\npatch=1,EE,004A788B,extended,00000037\\npatch=1,EE,004A979B,extended,00000037\\npatch=1,EE,004AE543,extended,00000037\\npatch=1,EE,004B0453,extended,00000037\\npatch=1,EE,004AC633,extended,00000037\\npatch=1,EE,004AB6AF,extended,00000037\\npatch=1,EE,004AA723,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Max Stat Codes\\Stability]",
+            author: "Code Master",
+            code: "patch=1,EE,004AD5BD,extended,00000037\\npatch=1,EE,004A8815,extended,00000037\\npatch=1,EE,004AF4CD,extended,00000037\\npatch=1,EE,004A788D,extended,00000037\\npatch=1,EE,004A979D,extended,00000037\\npatch=1,EE,004AE545,extended,00000037\\npatch=1,EE,004B0455,extended,00000037\\npatch=1,EE,004AC635,extended,00000037\\npatch=1,EE,004AB6B1,extended,00000037\\npatch=1,EE,004AA725,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Max Stat Codes\\Toughness]",
+            author: "Code Master",
+            code: "patch=1,EE,004AD5BC,extended,00000037\\npatch=1,EE,004A8814,extended,00000037\\npatch=1,EE,004AF4CC,extended,00000037\\npatch=1,EE,004A788C,extended,00000037\\npatch=1,EE,004A979C,extended,00000037\\npatch=1,EE,004AE544,extended,00000037\\npatch=1,EE,004B0454,extended,00000037\\npatch=1,EE,004AC634,extended,00000037\\npatch=1,EE,004AB6B0,extended,00000037\\npatch=1,EE,004AA724,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Max Stat Codes\\Tricks]",
+            author: "Code Master",
+            code: "patch=1,EE,004AD5B9,extended,00000037\\npatch=1,EE,004A8811,extended,00000037\\npatch=1,EE,004AF4C9,extended,00000037\\npatch=1,EE,004A7889,extended,00000037\\npatch=1,EE,004A9799,extended,00000037\\npatch=1,EE,004AE541,extended,00000037\\npatch=1,EE,004B0451,extended,00000037\\npatch=1,EE,004AC631,extended,00000037\\npatch=1,EE,004AB6AD,extended,00000037\\npatch=1,EE,004AA721,extended,00000037",
+            category: "Charakter-Statistiken"
+        },
+        {
+            description: "[Zoe Codes\\Unlock All Videos]",
+            author: "Code Master",
+            code: "patch=1,EE,004AC9A2,extended,000000FF",
+            category: "Freischaltungen"
+        },
+        {
+            description: "[Mac Codes\\Unlock All Videos]",
+            author: "Code Master",
+            code: "patch=1,EE,004ABA1A,extended,000000FF",
+            category: "Freischaltungen"
+        },
+        {
+            description: "[Have All Collectibles Codes\\Yellow Station]",
+            author: "Code Master",
+            code: "patch=1,EE,204ACAC0,extended,00000005\\npatch=1,EE,204A7D18,extended,00000005\\npatch=1,EE,204AE9D0,extended,00000005\\npatch=1,EE,204A6D90,extended,00000005\\npatch=1,EE,204A8CA0,extended,00000005\\npatch=1,EE,204ADA48,extended,00000005\\npatch=1,EE,204AF958,extended,00000005\\npatch=1,EE,204ABB38,extended,00000005\\npatch=1,EE,204AABB0,extended,00000005\\npatch=1,EE,204A9C28,extended,00000005",
+            category: "Sammlerstücke"
+        },
+    ];
+
+    const pnachTableBody = document.getElementById('pnach-table-body');
+    const pnachSearch = document.getElementById('pnach-search');
+    const pnachCategoryFilter = document.getElementById('pnach-category-filter');
+
+    function renderPnachCodes(codesToRender) {
+        pnachTableBody.innerHTML = ''; // Clear existing rows
+        if (codesToRender.length === 0) {
+            pnachTableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-slate-500">Keine PNACH-Codes gefunden.</td></tr>';
+            return;
+        }
+        codesToRender.forEach(code => {
+            const row = document.createElement('tr');
+            row.classList.add('bg-white', 'border-b', 'hover:bg-slate-50');
+            
+            const descriptionCell = document.createElement('td');
+            descriptionCell.classList.add('px-6', 'py-4', 'font-medium', 'text-slate-900');
+            descriptionCell.textContent = code.description;
+            row.appendChild(descriptionCell);
+
+            const authorCell = document.createElement('td');
+            authorCell.classList.add('px-6', 'py-4', 'text-slate-600');
+            authorCell.textContent = code.author;
+            row.appendChild(authorCell);
+
+            const codeCell = document.createElement('td');
+            codeCell.classList.add('px-6', 'py-4', 'text-sky-700', 'font-mono', 'whitespace-pre-wrap');
+            codeCell.textContent = code.code.replace(/\\n/g, '\n'); // Replace \\n with actual newline for display
+            row.appendChild(codeCell);
+
+            pnachTableBody.appendChild(row);
+        });
+    }
+
+    function applyPnachFilters() {
+        const searchText = pnachSearch.value.toLowerCase();
+        const selectedCategory = pnachCategoryFilter.value;
+
+        const filteredCodes = pnachCodesData.filter(code => {
+            const matchesSearch = code.description.toLowerCase().includes(searchText) || 
+                                  code.author.toLowerCase().includes(searchText) ||
+                                  code.code.toLowerCase().includes(searchText);
+            const matchesCategory = selectedCategory === 'Alle' || code.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        });
+        renderPnachCodes(filteredCodes);
+    }
+
+    // Initial render
+    renderPnachCodes(pnachCodesData);
+
+    // Event listeners for filtering
+    pnachSearch.addEventListener('keyup', applyPnachFilters);
+    pnachCategoryFilter.addEventListener('change', applyPnachFilters);
+
+});
+</script>
+</body>
+</html>
