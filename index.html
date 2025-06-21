@@ -880,7 +880,7 @@ patch=1,EE,ADRESSE,block,ANZAHL_BYTES
                     
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = ""; // Canvas stellt den API-Schlüssel zur Laufzeit automatisch bereit
+                    const apiKey = "AIzaSyCMamgSqFPUkB0gla8OSUINOjBYTDazIIc"; // Canvas stellt den API-Schlüssel zur Laufzeit automatisch bereit
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     const response = await fetch(apiUrl, {
